@@ -1,0 +1,64 @@
+/* General styles for both pages */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f6fa;
+    color: #333;
+}
+
+/* Headings */
+h1 {
+    text-align: center;
+    margin-top: 20px;
+    color: #2f3640;
+}
+
+/* Paragraphs */
+p {
+    text-align: center;
+    font-size: 16px;
+}
+
+/* Buttons */
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 25px;
+    font-size: 16px;
+    background-color: #0984e3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #74b9ff;
+}
+
+/* Driver page container */
+#driver-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+/* Dashboard map styling */
+#map {
+    height: 80vh; /* full screen map except heading */
+    width: 95%;
+    margin: 10px auto;
+    border: 2px solid #dcdde1;
+    border-radius: 10px;
+}
+
+/* Optional: popups on map */
+.leaflet-popup-content {
+    font-size: 14px;
+}
+.leaflet-popup-content-wrapper {
+    background-color: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
