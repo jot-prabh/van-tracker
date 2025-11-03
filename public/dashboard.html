@@ -18,7 +18,7 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const apiBase = "http://192.168.1.8";
+    const apiBase = window.location.origin;
     console.log("🚀 Dashboard started, calling:", apiBase + "/api/allowedVans");
 
  // same origin (or set to deployed server URL)
