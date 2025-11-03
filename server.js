@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ---------- CONFIG ----------
-const MONGO_URL = "process.env.MONGO_URL";
+const MONGO_URL = process.env.MONGO_URL;
 
 // Replace <user>, <pass>, cluster0.xxxxx with your Atlas values or set env var MONGO_URL
 
