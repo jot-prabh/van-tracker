@@ -1,0 +1,87 @@
+/* === Modern Van Tracker Dashboard Style === */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background-color: #f4f7fb;
+  color: #2c3e50;
+}
+
+/* Header / Title */
+h1 {
+  background: linear-gradient(90deg, #007bff, #00a8ff);
+  color: #fff;
+  padding: 18px 40px;
+  margin: 0;
+  font-size: 30px;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* Filter dropdown section */
+label {
+  display: block;
+  font-size: 16px;
+  margin: 20px 40px 5px;
+  font-weight: 600;
+  color: #273c75;
+}
+
+select {
+  margin-left: 40px;
+  padding: 10px;
+  width: 250px;
+  font-size: 15px;
+  border: 2px solid #dcdde1;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.3s;
+}
+
+select:hover,
+select:focus {
+  border-color: #00a8ff;
+  box-shadow: 0 0 5px rgba(0, 168, 255, 0.3);
+}
+
+/* Map styling */
+#map {
+  height: 80vh;
+  width: 92%;
+  margin: 20px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e0e0e0;
+}
+
+/* Leaflet popup customization */
+.leaflet-popup-content {
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 24px;
+    text-align: center;
+    padding: 15px;
+  }
+  select {
+    width: 80%;
+    margin: 10px auto;
+    display: block;
+  }
+  #map {
+    width: 95%;
+    height: 70vh;
+  }
+}

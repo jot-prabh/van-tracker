@@ -1,110 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Driver Page</title>
-  <link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-  <link rel="stylesheet" href="style.css">
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Van Tracker Driver</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Van Tracker Driver</h1>
+  <div class="container">
+    <div class="header">
+      <h1>Van Tracker Driver</h1>
+      <p>Track and share your location in real-time</p>
+    </div>
 
-  <div id="driver-container">
-    <label for="vanID">Select Van ID:</label>
-    <select id="vanID">
-      <option value="">-- Select Van --</option>
-      <option value="VAN001">VAN001</option>
-      <option value="VAN002">VAN002</option>
-      <option value="VAN003">VAN003</option>
-    </select>
-    <br><br>
-    <button id="toggleBtn">Start Tracking</button>
-    <p id="status">Tracking not started</p>
+    <div class="card">
+      <div class="form-group">
+        <label for="vanSelect">Select Your Van</label>
+        <select id="vanSelect"><option>Loading...</option></select>
+      </div>
+
+      <button id="toggleBtn" class="btn btn-primary">Start Tracking</button>
+
+      <div class="status-container">
+        <div class="status" id="status">
+          <span class="status-indicator"></span>
+          Tracking not started
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      College Van Tracking System © 2023
+    </div>
   </div>
 
   <script>
-    const serverUrl = "/api/locations"; // relative path to server
-    let trackingInterval = null;
+    const apiBase = "http://192.168.1.8";
+    const vanSelect = document.getElementById("vanSelect");
+    const toggleBtn = document.getElementById("toggleBtn");
+    const statusEl = document.getElementById("status");
+    let interval = null;
 
-    const vanSelect = document.getElementById('vanID');
-    const toggleBtn = document.getElementById('toggleBtn');
-    const status = document.getElementById('status');
-
-    // Fetch allowed vans from server and populate dropdown
-    fetch("/api/allowedVans")
-      .then(res => res.json())
-      .then(vans => {
+    async function loadVans() {
+      try {
+        const res = await fetch(apiBase + "/api/allowedVans");
+        const vans = await res.json();
+        vanSelect.innerHTML = "";
+        const defaultOpt = document.createElement("option");
+        defaultOpt.textContent = "-- Select Van --";
+        defaultOpt.value = "";
+        vanSelect.appendChild(defaultOpt);
         vans.forEach(v => {
-          const option = document.createElement("option");
-          option.value = v;
-          option.textContent = v;
-          vanSelect.appendChild(option);
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          vanSelect.appendChild(opt);
         });
-      })
-      .catch(err => console.error("Failed to load allowed vans:", err));
-
-    // Toggle Start/Stop tracking
-    toggleBtn.addEventListener('click', () => {
-      const vanID = vanSelect.value;
-      if (!vanID) {
-        alert("Please select a Van ID");
-        return;
+      } catch (err) {
+        console.error("Failed to load vans", err);
+        vanSelect.innerHTML = "<option>Error loading vans</option>";
       }
+    }
 
-      if (trackingInterval === null) {
-        // Start tracking
-        if (navigator.geolocation) {
-          trackingInterval = setInterval(() => {
-            navigator.geolocation.getCurrentPosition(pos => {
-              fetch(serverUrl, {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({
-                  vanID: vanID,
-                  lat: pos.coords.latitude,
-                  lon: pos.coords.longitude
-                })
-              })
-              .then(res => {
-                if (!res.ok) {
-                  clearInterval(trackingInterval);
-                  trackingInterval = null;
-                  toggleBtn.textContent = "Start Tracking";
-                  vanSelect.disabled = false;
-                  status.textContent = "Van ID not allowed!";
-                  alert("This Van ID is not allowed!");
-                }
-              })
-              .catch(err => console.error(err));
-            });
-          }, 5000); // every 5 seconds
-        } else {
-          alert("Geolocation not supported!");
+    loadVans();
+
+    toggleBtn.addEventListener("click", () => {
+      const vanID = vanSelect.value;
+      if (!vanID) { alert("Please select a van."); return; }
+
+      if (!interval) {
+        if (!navigator.geolocation) {
+          alert("Geolocation not supported.");
           return;
         }
 
-        toggleBtn.textContent = "Stop Tracking";
-        vanSelect.disabled = true;
-        status.textContent = "Tracking started...";
-      } else {
-        // Stop tracking
-        clearInterval(trackingInterval);
-        trackingInterval = null;
+        interval = setInterval(() => {
+          navigator.geolocation.getCurrentPosition(async pos => {
+            const body = { vanID, lat: pos.coords.latitude, lon: pos.coords.longitude };
+            await fetch(apiBase + "/api/locations", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body)
+            });
+            statusEl.innerHTML = `<span class='status-indicator active'></span> Tracking ${vanID}`;
+          });
+        }, 5000);
 
+        toggleBtn.textContent = "Stop Tracking";
+      } else {
+        clearInterval(interval);
+        interval = null;
         toggleBtn.textContent = "Start Tracking";
-        vanSelect.disabled = false;
-        status.textContent = "Tracking stopped";
+        statusEl.innerHTML = `<span class='status-indicator'></span> Tracking stopped`;
       }
     });
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('Service Worker registered'));
-}
-
   </script>
 </body>
 </html>

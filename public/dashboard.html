@@ -1,61 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>student Dashboard</title>
-  <link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <!-- Leaflet CSS -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="style1.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
- <link rel="stylesheet" href="style.css">
-  <style>
-    #map { height: 100vh; } /* full-screen map */
-  </style>
+  <style>#map{height:82vh;width:95%;margin:0 auto;}</style>
 </head>
 <body>
   <h1>Student Dashboard</h1>
+
+  <label for="vanFilter">Choose Van:</label>
+  <select id="vanFilter"><option>Loading...</option></select>
+
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const map = L.map('map').setView([28.5, 77.2], 10); // initial center
+    const apiBase = "http://192.168.1.8";
+    console.log("🚀 Dashboard started, calling:", apiBase + "/api/allowedVans");
 
-    // OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
+ // same origin (or set to deployed server URL)
+    const vanFilter = document.getElementById("vanFilter");
+    let map = L.map('map').setView([28.5, 77.2], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
     let markers = {};
 
-    async function fetchLocations() {
+    async function loadVans() {
+      console.log("📡 Fetching vans...");
       try {
-        const res = await fetch("/api/locations");
-        const data = await res.json();
+        const res = await fetch(apiBase + "/api/allowedVans");
+        const vans = await res.json();
+        console.log("✅ Vans received:", vans);
 
-        for (const vanID in data) {
-          const { lat, lon } = data[vanID];
-
-          if (markers[vanID]) {
-            markers[vanID].setLatLng([lat, lon]);
-          } else {
-            markers[vanID] = L.marker([lat, lon]).addTo(map)
-              .bindPopup(`<b>${vanID}</b>`);
-          }
-        }
+        vanFilter.innerHTML = "";
+        const all = document.createElement("option"); all.value="all"; all.textContent="All Vans"; vanFilter.appendChild(all);
+        vans.forEach(v => {
+          const opt = document.createElement("option"); opt.value=v; opt.textContent=v; vanFilter.appendChild(opt);
+        });
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load vans", err);
       }
     }
 
-    // Fetch locations every 5 sec
-    setInterval(fetchLocations, 5000);
-    fetchLocations(); // initial load
-    if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('Service Worker registered'));
-}
+    async function fetchLocations() {
+      try {
+        const res = await fetch(apiBase + "/api/locations");
+        const data = await res.json(); // object { VAN001: {lat,lon,updated}, ... }
+        const filter = vanFilter.value || 'all';
 
+        // remove markers for vans not in filter
+        for (const id in markers) {
+          if (filter !== 'all' && id !== filter) {
+            map.removeLayer(markers[id]);
+            delete markers[id];
+          }
+        }
+
+        for (const vanID in data) {
+          if (filter !== 'all' && filter !== vanID) continue;
+          const { lat, lon } = data[vanID];
+          if (!lat || !lon) continue;
+          if (markers[vanID]) {
+            markers[vanID].setLatLng([lat, lon]);
+          } else {
+            markers[vanID] = L.marker([lat, lon]).addTo(map).bindPopup(`<b>${vanID}</b>`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch locations", err);
+      }
+    }
+
+    vanFilter.addEventListener('change', () => {
+      // If specific van chosen, optionally zoom
+      fetchLocations();
+      if (vanFilter.value !== 'all') {
+        const cur = markers[vanFilter.value];
+        if (cur) map.setView(cur.getLatLng(), 14);
+      }
+    });
+
+    // initial load
+    loadVans().then(() => { fetchLocations(); setInterval(fetchLocations, 5000); });
   </script>
 </body>
 </html>
