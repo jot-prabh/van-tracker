@@ -122,6 +122,7 @@ app.get("/api/locations", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });// Debug route to check what data exists in MongoDB
+// Debug route
 app.get("/debug/vans", async (req, res) => {
   try {
     const docs = await mongoose.connection.db.collection("vans").find({}).toArray();
@@ -130,6 +131,13 @@ app.get("/debug/vans", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// Serve dashboard as homepage
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/dashboard.html");
+});
 
-
+// Optional: route for driver page
+app.get("/driver", (req, res) => {
+  res.sendFile(__dirname + "/public/driver.html");
+});
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
